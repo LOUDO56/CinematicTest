@@ -1,79 +1,92 @@
 package fr.loudo.cinematictest;
 
 import fr.loudo.cinematictest.utils.Location;
-import fr.loudo.cinematictest.utils.MathUtils;
+import fr.loudo.cinematictest.utils.TpUtil;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.text.Text;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.decoration.ArmorStandEntity;
+import net.minecraft.server.network.ServerPlayerEntity;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class CinematicPos {
 
-    private double t;
+    private ServerPlayerEntity player;
 
-    private PlayerEntity player;
     private boolean isCinematic;
     private boolean eventRegistered;
-    private Location firstPos;
-    private Location secondPos;
-    private Location currentPos;
+
+    private List<Location> keyFrames;
+    private Location currentLoc;
+
+    private long startTime;
+    private double duration;
+    private int currentIndexKeyframe;
 
     public CinematicPos() {
-        eventRegistered = false;
+        this.keyFrames = new ArrayList<>();
+        this.eventRegistered = false;
     }
 
-    public void start(PlayerEntity player, double speed) {
+    public void start(ServerPlayerEntity player, double durationInSeconds) {
+        duration = durationInSeconds;
+        startTime = System.nanoTime();
+        currentIndexKeyframe = 0;
         this.player = player;
         isCinematic = true;
-        currentPos = firstPos;
-        t = 0;
-        System.out.println("speed: " + speed);
         if(!eventRegistered) {
             eventRegistered = true;
             ServerTickEvents.END_SERVER_TICK.register(server -> {
                 if(!isCinematic) return;
-                if(t <= 1) {
-                    System.out.println("t: " + t);
-                    currentPos = MathUtils.getNextLocation(currentPos, secondPos, t);
-                    System.out.println("currentPos: " + currentPos);
-                    t += speed;
-                } else {
-                    stop();
-                }
+
+                TpUtil.teleportPlayer(player, currentLoc.getX(), currentLoc.getY(), currentLoc.getZ());
+
             });
         }
     }
 
     public void stop() {
-        player.sendMessage(Text.of("Stopped."), false);
-        t = 0;
         isCinematic = false;
     }
 
-    public Location getFirstPos() {
-        return firstPos;
+    public void addKeyframe(Location keyframe) {
+        keyFrames.add(keyframe);
     }
 
-    public void setFirstPos(Location firstPos) {
-        this.firstPos = firstPos;
-    }
-
-    public Location getSecondPos() {
-        return secondPos;
-    }
-
-    public void setSecondPos(Location secondPos) {
-        this.secondPos = secondPos;
-    }
-
-    public Location getCurrentPos() {
-        return currentPos;
+    public void resetKeyFrames() {
+        keyFrames.clear();
     }
 
     public boolean isCinematic() {
         return isCinematic;
     }
 
-    public PlayerEntity getPlayer() {
-        return player;
+    public long getStartTime() {
+        return startTime;
+    }
+
+    public double getDuration() {
+        return duration / keyFrames.size();
+    }
+
+    public List<Location> getKeyFrames() {
+        return keyFrames;
+    }
+
+    public void setCurrentIndexKeyframe(int currentIndexKeyframe) {
+        this.currentIndexKeyframe = currentIndexKeyframe;
+    }
+
+    public int getCurrentIndexKeyframe() {
+        return currentIndexKeyframe;
+    }
+
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
+    }
+
+    public void setCurrentLoc(Location currentLoc) {
+        this.currentLoc = currentLoc;
     }
 }

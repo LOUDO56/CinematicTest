@@ -1,0 +1,18 @@
+Pour faire une cutscene entre 2 points fluide et qui ne dépend pas des ticks:
+Calculer la position actuelle entre 2 points basé sur le temps et non les ticks et les fps, la classe Camera ne dépend pas des ticks.
+
+Vu que la caméra est côté client, si on va dans une zone ou les chunk ne sont pas chargé, il n'y aura que du vide.
+Donc, à chaque tick, il faut téléporter le joueur côté serveur aux coordonées de la caméra quand la cutscene joue,
+comme ça, les chunks seront chargé correctement.
+POUR LE TP, il faut utiliser cette méthode:
+public boolean teleport(
+    ServerWorld world,
+    double destX,
+    double destY,
+    double destZ,
+    Set<PositionFlag> flags,
+    float yaw,
+    float pitch,
+    boolean resetCamera
+)
+(Ou quelque chose de similaire selon les mappings utilisés)

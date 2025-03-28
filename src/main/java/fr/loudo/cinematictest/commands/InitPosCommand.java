@@ -4,68 +4,61 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import fr.loudo.cinematictest.CinematicPos;
 import fr.loudo.cinematictest.CinematicTest;
 import fr.loudo.cinematictest.utils.Location;
-import net.minecraft.command.CommandSource;
+import fr.loudo.cinematictest.utils.TpUtil;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.Camera;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
-public class InitPos {
+public class InitPosCommand {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(CommandManager.literal("cinematic")
-                .then(CommandManager.literal("pos1").executes(InitPos::setPos1))
-                .then(CommandManager.literal("pos2").executes(InitPos::setPos2))
+                .then(CommandManager.literal("addframe").executes(InitPosCommand::addKeyFrame))
+                .then(CommandManager.literal("clearframes").executes(InitPosCommand::clearFrames))
                 .then(CommandManager.literal("start")
                         .then(CommandManager.argument("speed", DoubleArgumentType.doubleArg())
                                 .executes(context -> start(context, DoubleArgumentType.getDouble(context, "speed")))
                         )
                 )
-                .then(CommandManager.literal("stop").executes(InitPos::stop))
+                .then(CommandManager.literal("stop").executes(InitPosCommand::stop))
         );
     }
 
 
-    private static int setPos1(CommandContext<ServerCommandSource> context) {
+    private static int addKeyFrame(CommandContext<ServerCommandSource> context) {
 
-        PlayerEntity player = context.getSource().getPlayer();
-        CinematicTest.getCinematicPos().setFirstPos(
+        Camera camera = MinecraftClient.getInstance().gameRenderer.getCamera();
+        CinematicTest.getCinematicPos().addKeyframe(
                 new Location(
-                        player.getX(),
-                        player.getY(),
-                        player.getZ(),
-                        player.getPitch(),
-                        player.getY()
+                        camera.getPos().getX(),
+                        camera.getPos().getY(),
+                        camera.getPos().getZ(),
+                        camera.getPitch(),
+                        camera.getYaw()
                 )
         );
-        player.sendMessage(Text.of("First pos set!"), false);
+        context.getSource().getPlayer().sendMessage(Text.of("Keyframe added!"), false);
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int setPos2(CommandContext<ServerCommandSource> context) {
+    private static int clearFrames(CommandContext<ServerCommandSource> context) {
 
-        PlayerEntity player = context.getSource().getPlayer();
-        CinematicTest.getCinematicPos().setSecondPos(
-                new Location(
-                        player.getX(),
-                        player.getY(),
-                        player.getZ(),
-                        player.getPitch(),
-                        player.getY()
-                )
-        );
-        player.sendMessage(Text.of("Second pos set!"), false);
+        CinematicTest.getCinematicPos().resetKeyFrames();
+        context.getSource().getPlayer().sendMessage(Text.of("Keyframe cleared!"), false);
 
         return Command.SINGLE_SUCCESS;
     }
 
     private static int start(CommandContext<ServerCommandSource> context, double speed) {
 
-        PlayerEntity player = context.getSource().getPlayer();
+        ServerPlayerEntity player = context.getSource().getPlayer();
         CinematicTest.getCinematicPos().start(player, speed);
         player.sendMessage(Text.of("Started."), false);
 

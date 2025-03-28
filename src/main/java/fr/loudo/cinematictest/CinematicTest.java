@@ -1,6 +1,6 @@
 package fr.loudo.cinematictest;
 
-import fr.loudo.cinematictest.commands.InitPos;
+import fr.loudo.cinematictest.commands.InitPosCommand;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 
@@ -13,7 +13,7 @@ public class CinematicTest implements ModInitializer {
         cinematicPos = new CinematicPos();
 
         CommandRegistrationCallback.EVENT.register((commandDispatcher, commandRegistryAccess, registrationEnvironment) -> {
-            InitPos.register(commandDispatcher);
+            InitPosCommand.register(commandDispatcher);
         });
     }
 
