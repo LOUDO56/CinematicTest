@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "cinematictest",
+  "version": "${version}",
+  "name": "CinematicTest",
+  "description": "",
+  "authors": [],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/cinematictest/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "fr.loudo.cinematictest.client.CinematicTestClient"
+    ],
+    "main": [
+      "fr.loudo.cinematictest.CinematicTest"
+    ]
+  },
+  "mixins": [
+    "cinematictest.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
